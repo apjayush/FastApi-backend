@@ -9,7 +9,7 @@ router = APIRouter()
 @router.post("/webhook")
 async def whatsapp_webhook(request: Request):
     data = await request.json()
-    log_message(str(data))  # log full raw webhook content
+    # log_message(str(data))  # log full raw webhook content
 
     try:
         entry = data["entry"][0]
@@ -32,6 +32,9 @@ async def whatsapp_webhook(request: Request):
 
         msg = messages[0]
         user_phone = msg["from"]
+
+        print(f"User Message: {msg}")  # for debugging
+        print(f"User Phone: {user_phone}")
 
         # ---------------------------------------
         # CASE 1: USER SENT NORMAL TEXT
@@ -66,7 +69,7 @@ async def whatsapp_webhook(request: Request):
         # SEND TO RASA
         # ---------------------------------------
         rasa_response = await send_to_rasa(user_phone, user_msg)
-        log_message(f"Rasa says: {rasa_response}")
+        log_message(f"Rasa replied: {rasa_response}")
 
         # ---------------------------------------
         # SEND RASA RESPONSES TO WHATSAPP

@@ -9,6 +9,8 @@ async def send_to_rasa(sender: str, message: str):
         "message": message
     }
 
+    print(f"Sending to Rasa: {payload}")  # for debugging
+
     async with httpx.AsyncClient() as client:
         response = await client.post(RASA_URL, json=payload)
         return response.json()
