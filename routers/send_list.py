@@ -45,6 +45,9 @@ async def send_list(payload: dict):
         }
     }
 
+    print("wa_payload:", wa_payload)  # for debugging
+
+
     headers = {
         "Authorization": f"Bearer {WHATSAPP_TOKEN}",
         "Content-Type": "application/json"
@@ -52,7 +55,10 @@ async def send_list(payload: dict):
 
     try:
         async with httpx.AsyncClient(timeout=20.0) as client:
+            print("Sending request to WhatsApp API...")
+            print("url is ", WHATSAPP_URL)
             response = await client.post(WHATSAPP_URL, json=wa_payload, headers=headers)
+            print("response", response.text)
             response.raise_for_status()
 
         return {"status": "success", "detail": "List sent to WhatsApp"}
