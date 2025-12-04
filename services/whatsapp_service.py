@@ -8,6 +8,8 @@ async def send_whatsapp_text(to: str, message: str):
     """
 
     print("Reaching WhatsApp API to send message")
+
+    print(message)
     
     url = f"https://graph.facebook.com/v20.0/{PHONE_NUMBER_ID}/messages"
 
@@ -26,6 +28,7 @@ async def send_whatsapp_text(to: str, message: str):
 
     async with httpx.AsyncClient() as client:
         response = await client.post(url, json=payload, headers=headers)
+        print("WhatsApp response status:", response.status_code)
         return response.json()
 
 
