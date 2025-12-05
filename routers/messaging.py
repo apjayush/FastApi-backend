@@ -21,7 +21,7 @@ class SendMessageRequest(BaseModel):
 
 
 class NotifyAgentRequest(BaseModel):
-    agent_phone: str
+    agent_phone: str  # Required - comes from Rasa action
     customer_name: str
     customer_phone: str
 
@@ -71,14 +71,16 @@ async def notify_agent(payload: NotifyAgentRequest):
     
     try:
         # Send custom template with customer details
+        whatsapp_link = f"https://wa.me/{payload.customer_phone}"
+        
         template_payload = {
             "messaging_product": "whatsapp",
             "to": payload.agent_phone,
             "type": "template",
             "template": {
-                "name": "enquiry_received",
+                "name": "new_customer_enquiry",
                 "language": {
-                    "code": "en_IN"
+                    "code": "en"
                 },
                 "components": [
                     {
@@ -86,15 +88,15 @@ async def notify_agent(payload: NotifyAgentRequest):
                         "parameters": [
                             {
                                 "type": "text",
-                                "text": payload.customer_name  # {{1}} - Customer name
+                                "text": payload.customer_name  # {{1}} - Customer name (e.g., Ayush Aryan)
                             },
                             {
                                 "type": "text",
-                                "text": payload.customer_phone  # {{2}} - Customer phone
+                                "text": payload.customer_phone  # {{2}} - Customer phone (e.g., 918529750269)
                             },
                             {
                                 "type": "text",
-                                "text": payload.customer_phone  # {{3}} - Customer phone (repeated)
+                                "text": whatsapp_link  # {{3}} - WhatsApp link (e.g., https://wa.me/918529750269)
                             }
                         ]
                     }

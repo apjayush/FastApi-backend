@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from app.db import get_db_connection
+from app.services.whatsapp_service import send_whatsapp_text
 from datetime import date
 from dotenv import load_dotenv
 import os
@@ -23,46 +24,35 @@ class TestRideRequest(BaseModel):
 @router.post("/book-test-ride")
 async def book_test_ride(payload: TestRideRequest):
     """
-    Book a test ride
+    Book a test ride and send confirmation via WhatsApp
     """
     name = payload.name.strip()
     phone = payload.phone.strip()
-    vehicle = payload.vehicle
+    vehicle = payload.vehicle or "Not specified"
     today = date.today()
 
-    print(f"Booking test ride for {name} ({phone}) - Vehicle: {vehicle}")
+    print(f"📝 Booking test ride for {name} ({phone}) - Vehicle: {vehicle}")
 
     try:
-        conn = await get_db_connection()
+        # Create confirmation message
+        confirmation_message = f"""✅ *Test Ride Booked Successfully!*
 
-        # Insert test ride booking
-        insert_query = f"""
-            INSERT INTO {DB_SCHEMA}.test_rides (name, phone, vehicle, booking_date, status)
-            VALUES ($1, $2, $3, $4, $5)
-            RETURNING id
-        """
-        
-        test_ride_id = await conn.fetchval(
-            insert_query,
-            name,
-            phone,
-            vehicle or "Not specified",
-            today,
-            "pending"
+👤 Name: {name}
+🏍️ Vehicle: {vehicle}
+📞 Phone: {phone}
+
+📍 Location: BLR TVS MOTORS
+⏰ Our team will contact you shortly to confirm the date and time.
+
+Thank you for choosing TVS Motors! 🚀"""
+
+        # Send confirmation message directly via WhatsApp
+        print(f"📤 Sending confirmation message to {phone}...")
+        await send_whatsapp_text(
+            to=phone,
+            message=confirmation_message
         )
 
-        await conn.close()
-
-        print(f"✅ Test ride booked with ID: {test_ride_id}")
-
-        return {
-            "status": "success",
-            "test_ride_id": test_ride_id,
-            "message": f"Test ride booked for {name}",
-            "name": name,
-            "phone": phone,
-            "vehicle": vehicle
-        }
 
     except Exception as e:
         print(f"❌ Error booking test ride: {str(e)}")
